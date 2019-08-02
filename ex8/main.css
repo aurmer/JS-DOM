@@ -5,3 +5,14 @@
 #description, #search, #todo-list {
     font-size: 1.5em;
 }
+
+li:hover {
+  cursor: pointer;
+}
+
+li {
+  user-select: none;
+}
+#finish-button {
+  display: none;
+}

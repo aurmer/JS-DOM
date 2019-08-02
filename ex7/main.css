@@ -12,4 +12,6 @@
 
 #section {
     padding: 5px;
+    overflow: hidden;
+    transition: max-height .3s linear;
 }
