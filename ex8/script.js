@@ -9,30 +9,103 @@
     SUPER BONUS) Make each task editable
 */
 
+//define node variables for all functions' use
 var addButton = document.querySelector('#add-button')
 var taskInputElement = document.querySelector('#description')
+var editTasksButton = document.querySelector('#edit-button')
+var finishEditButton = document.querySelector('#finish-button')
+var todoList = document.querySelector('#todo-list')
 
+//if there are li elements on page load, this will attach the toggleLineThrough
+document.querySelectorAll('li').forEach(function(liNode){
+  liNode.addEventListener('click',toggleLineThrough)
+})
+
+//create handler for 'add task' button
 addButton.addEventListener('click', function() {
-  var taskValue = taskInputElement.value
+  //only act if the input has text
+  if(taskInputElement.value !== "") {
+    var taskValue = taskInputElement.value
+    taskInputElement.value = ""
+
+    var newItem = document.createElement('li')
+    newItem.innerHTML = taskValue
+    newItem.addEventListener('click',toggleLineThrough)
+
+
+    document.querySelector('#todo-list').appendChild(newItem)
+  }
+})
+
+//this function attached to 'Edit' button click
+editTasksButton.addEventListener('click',function(event) {
+  addButton.disabled = true
   taskInputElement.value = ""
+  taskInputElement.disabled = true
 
-  var newItem = document.createElement('li')
-  newItem.innerHTML = taskValue
-  newItem.addEventListener('click',toggleLineThrough)
+  //run for every item in the todo list
+  document.querySelectorAll('li').forEach(function(oldLi) {
+    var newInput = document.createElement('input')
+    newInput.type = 'text'
+    newInput.value = oldLi.innerHTML
+    newInput.className = 'edit-input'
 
+    if(oldLi.style.textDecoration === 'line-through') { //conditionally add a 'completion' status if it was marked
+      newInput.className = newInput.className + ' task-complete'
+    }
+    todoList.appendChild(newInput)
+    oldLi.remove() //we have all the information from the li, now remove it
 
-  document.querySelector('#todo-list').appendChild(newItem)
+    var newDeleteButton = document.createElement('button')
+    newDeleteButton.innerHTML = "Delete"
+    newDeleteButton.addEventListener('click',deleteItem) //attach handler for click
+    newDeleteButton.className = 'delete-button'
+    todoList.appendChild(newDeleteButton)
+
+    todoList.appendChild(document.createElement('br')) //br tag to keep the list item editors on separate lines
+
+  })
+
+  //swap the 'Edit' and 'Done' buttons on the UI
+  editTasksButton.style.display = 'none'
+  finishEditButton.style.display = 'inline'
 })
 
-var allLi = document.querySelectorAll('li')
+//The function attached to 'Done' button click
+finishEditButton.addEventListener('click',function(event) {
+
+  //allow the entry of new todo items
+  addButton.disabled = false
+  taskInputElement.disabled = false
 
 
-allLi.forEach(function(ele){
-  ele.addEventListener('click',toggleLineThrough)
+  //remove the delete buttons and br tags
+  document.querySelectorAll('.delete-button,br').forEach(function(ele) {
+    ele.remove()
+  })
+
+  //for each of the edit-task inputs, gather its value and its 'completion state' and recreate the li tags
+  document.querySelectorAll('.edit-input').forEach(function(ele) {
+    var newTaskLi = document.createElement('li')
+    newTaskLi.innerHTML = ele.value
+
+    if(ele.className.includes('task-complete')) {
+      newTaskLi.style.textDecoration = 'line-through' //we stored the task's 'completion state' as a class of the input element, recover that information as a 'line-through'
+    }
+    newTaskLi.addEventListener('click',toggleLineThrough) //attach the 'check-off' function to the new li
+
+    todoList.appendChild(newTaskLi) //the new li is ready, add it into the todo list
+
+    ele.remove() //remove the input element for this todo item
+  })
+
+  //swap the 'Edit' and 'Done' buttons on the UI
+  editTasksButton.style.display = 'inline'
+  finishEditButton.style.display = 'none'
 })
 
+//when clicking a list item, toggle its 'line-through' style
 function toggleLineThrough(event) {
-  console.log('wefwef')
   var myDecoration = event.currentTarget.style.textDecoration
   if(myDecoration === "line-through") {
     event.currentTarget.style.textDecoration = "none"
@@ -41,76 +114,7 @@ function toggleLineThrough(event) {
   }
 }
 
-var editTasksButton = document.querySelector('#edit-button')
-var finishEditButton = document.querySelector('#finish-button')
-var todoList = document.querySelector('#todo-list')
-
-editTasksButton.addEventListener('click',function(event) {
-  addButton.disabled = true
-  taskInputElement.value = ""
-  taskInputElement.disabled = true
-
-
-  var myList = document.querySelectorAll('li')
-  var listModel = []
-
-  myList.forEach(function(ele) {
-    var newInput = document.createElement('input')
-    newInput.type = 'text'
-    newInput.value = ele.innerHTML
-    if(ele.style.textDecoration === 'line-through')
-    {
-      newInput.className = 'edit-input task-complete'
-    } else {
-      newInput.className = 'edit-input'
-    }
-    todoList.appendChild(newInput)
-
-    ele.remove()
-
-    var newDeleteButton = document.createElement('button')
-    newDeleteButton.innerHTML = "Delete"
-    newDeleteButton.addEventListener('click',deleteItem)
-    newDeleteButton.className = 'delete-button'
-    todoList.appendChild(newDeleteButton)
-
-    todoList.appendChild(document.createElement('br'))
-
-  })
-
-  editTasksButton.style.display = 'none'
-  finishEditButton.style.display = 'inline'
-})
-
-
-finishEditButton.addEventListener('click',function(event) {
-  addButton.disabled = false
-  taskInputElement.disabled = false
-
-
-
-  document.querySelectorAll('.delete-button,br').forEach(function(ele) {
-    ele.remove()
-  })
-
-  document.querySelectorAll('.edit-input').forEach(function(ele) {
-    var newTask = document.createElement('li')
-    newTask.innerHTML = ele.value
-    if(ele.className.includes('task-complete')) {
-      newTask.style.textDecoration = 'line-through'
-    }
-    newTask.addEventListener('click',toggleLineThrough)
-
-    todoList.appendChild(newTask)
-
-    ele.remove()
-  })
-
-  editTasksButton.style.display = 'inline'
-  finishEditButton.style.display = 'none'
-})
-
-
+//The function which will attach to all delete buttons' clicks
 function deleteItem(event) {
   var myButton = event.currentTarget
   var myInput = myButton.previousSibling
